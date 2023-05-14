@@ -69,15 +69,13 @@
 .feed-content-text {
 	color: rgb(51, 51, 51);
 }
+
+#myfeed-only-box input, #myfeed-only-box label {
+	cursor: pointer;
+}
 </style>
 </head>
 <body>
-	<%
-	if (session.getAttribute("hashcode") == null) {
-		response.sendRedirect("login.jsp");
-		return;
-	}
-	%>
 
 	<%@ include file="header.jsp"%>
 
@@ -86,16 +84,40 @@
 
 		<div class="container" id="feed-list-header">
 			<div class="row align-items-center g-0">
-				<div class="col-6">
+				<div class="col-3">
 					<h1 style="font-size: 2.5em;">
 						<b>Feeds</b>
 					</h1>
 				</div>
-				<div class="col-6">
+				<div class="col-4 d-flex justify-content-end">
+					<%
+					if (hashcode != null) {
+					%>
+					<div class="form-check form-switch me-3" id="myfeed-only-box">
+						<input class="form-check-input" type="checkbox" role="switch"
+							id="myfeed-only-checkbox"> <label
+							class="form-check-label" for="myfeed-only-checkbox">내 피드만</label>
+					</div>
+					<%
+					}
+					%>
+
+				</div>
+				<div class="col-5">
+					<%
+					if (hashcode != null) {
+					%>
+
 					<div id="feed-add-btn"
-						class="d-flex align-items-center justify-content-center">
+						class="d-flex align-items-center justify-content-center"
+						data-bs-toggle="modal" data-bs-target="#feed-add-modal">
+
 						<img src="./static/img/add.png" width=25 height=25>
 					</div>
+					<%
+					}
+					%>
+
 				</div>
 			</div>
 		</div>
@@ -104,12 +126,13 @@
 		<%
 		DB db = new DB();
 
-		String query = "SELECT puser.name, puser.email, pfeed.content, pfeed.timestamp, pfeed.hashcode FROM pfeed INNER JOIN puser ON pfeed.hashcode = puser.hashcode";
+		String query = "SELECT puser.name, puser.email, pfeed.content, pfeed.timestamp, pfeed.hashcode, pfeed.id FROM pfeed INNER JOIN puser ON pfeed.hashcode = puser.hashcode ORDER BY pfeed.id DESC;";
 		db.stmt = db.conn.prepareStatement(query);
 
 		db.rs = db.stmt.executeQuery();
 
 		while (db.rs.next()) {
+			String feedId = db.rs.getString("pfeed.id");
 		%>
 
 		<div class="feed-card">
@@ -119,8 +142,11 @@
 					<%
 					if (((String) db.rs.getString("pfeed.hashcode")).equals(hashcode)) {
 					%>
-					<img src="./static/img/delete.png" class="me-1"> <img
-						src="./static/img/edit.png" class="me-1">
+					<img src="./static/img/delete.png" class="me-1"
+						onclick="ajaxDeleteFeed(<%=feedId%>)"> <img
+						src="./static/img/edit.png" class="me-1"
+						onclick="loadEditModal(<%=feedId%>)" data-bs-toggle="modal"
+						data-bs-target="#feed-edit-modal">
 					<%
 					}
 					%>
@@ -139,7 +165,7 @@
 				</div>
 			</div>
 			<div class="feed-content-box">
-				<p class="feed-content-text"><%=db.rs.getString("pfeed.content")%></p>
+				<p class="feed-content-text" id="feed-content-<%=feedId%>"><%=db.rs.getString("pfeed.content")%></p>
 			</div>
 		</div>
 
@@ -148,7 +174,172 @@
 		}
 		%>
 
-
 	</div>
+
+	<%@ include file="footer.jsp"%>
+
+
+	<!-- Feed add Modal -->
+	<div class="modal fade" id="feed-add-modal" tabindex="-1"
+		aria-labelledby="feed-add-modal-label" aria-hidden="true">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="feed-add-modal-label">피드 추가</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						id="feed-add-btn-close" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="form-floating">
+						<textarea class="form-control" placeholder="Leave a comment here"
+							id="feed-add-content"></textarea>
+						<label for="feed-add-content">Content</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal" id="feed-add-cancel-btn">취소</button>
+					<button type="button" class="btn btn-primary"
+						id="feed-add-complete-btn">완료</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Feed Edit Modal -->
+	<div class="modal fade" id="feed-edit-modal" tabindex="-1"
+		aria-labelledby="feed-edit-modal-label" aria-hidden="true">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="feed-edit-modal-label">피드 수정</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						id="feed-edit-btn-close" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="form-floating">
+						<textarea class="form-control" placeholder="Leave a comment here"
+							id="feed-edit-content"></textarea>
+						<label for="feed-edit-content">Content</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal" id="feed-edit-cancel-btn">취소</button>
+					<button type="button" class="btn btn-primary"
+						id="feed-edit-complete-btn">완료</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var feedAddContent = $('#feed-add-content');
+		var feedAddCompleteBtn = $('#feed-add-complete-btn');
+		var feedAddCancelBtn = $('#feed-add-cancel-btn');
+		var feedAddCloseBtn = $('#feed-add-btn-close'); 
+		
+		//피드추가 폼 초기화하는 함수
+		function clearFeedAddContent(){
+			feedAddContent[0].value = '';
+		}
+		feedAddCancelBtn.add(feedAddCloseBtn).on("click", clearFeedAddContent);
+		
+		//피드추가 ajax
+		function ajaxAddFeed(){
+			var formData = new FormData();
+			formData.append("action", "feedAdd");
+			formData.append("content", feedAddContent.val().replace(/\n/g, "<br>"));
+			
+			ajaxPost(formData, "FeedServlet", 
+					(status, res) => {	//success
+						if (res === "ok") {
+							alert("등록이 완료되었습니다!");
+							window.location.href="feed.jsp";
+						} else if (res === "fail") {
+							alert("등록이 실패했습니다!");
+						} else if (res === "no_permission"){
+							alert("피드 작성 권한이 없습니다.");
+							window.location.href="login.jsp";
+						}
+							
+					},
+					(status, res) => { //fail
+						console.log("피드 등록 중 오류 발생!");
+					}
+				);
+		}
+		feedAddCompleteBtn.on("click", ajaxAddFeed);
+		
+		//피드삭제 ajax
+		function ajaxDeleteFeed(feedId){
+			var formData = new FormData();
+			formData.append("action", "feedDelete");
+			formData.append("feedId", feedId);
+			
+			ajaxPost(formData, "FeedServlet", 
+					(status, res) => {	//success
+						if (res === "ok") {
+							alert("피드가 삭제되었습니다!");
+							window.location.href="feed.jsp";
+						} else if (res === "fail") {
+							alert("피드 삭제가 실패했습니다!");
+						} else if (res === "no_permission"){
+							alert("피드 삭제 권한이 없습니다.");
+							window.location.href="login.jsp";
+						}
+					},
+					(status, res) => { //fail
+						console.log("피드 삭제 중 오류 발생!");
+					}
+				);
+		}
+		
+		var editFeedId = null;
+		//피드수정 데이터 로드
+		function loadEditModal(feedId){
+			editFeedId = feedId;
+			var feedContent = $('#feed-content-' + feedId).html();
+			feedContent = feedContent.replace(/<br>/g, "\n");
+			
+			var feedTextArea = $('#feed-edit-content')
+			feedTextArea.val(feedContent);
+		}
+		
+		//피드수정 ajax
+		function ajaxEditFeed(){
+			var formData = new FormData();
+			formData.append("action", "feedEdit");
+			formData.append("feedId", editFeedId);
+			formData.append("content", $('#feed-edit-content').val().replace(/\n/g, "<br>"));
+			
+			ajaxPost(formData, "FeedServlet", 
+					(status, res) => {	//success
+						if (res === "ok") {
+							alert("수정이 완료되었습니다!");
+							window.location.href="feed.jsp";
+						} else if (res === "fail") {
+							alert("수정이 실패했습니다!");
+						} else if (res === "no_permission"){
+							alert("피드 수정 권한이 없습니다.");
+							window.location.href="login.jsp";
+						}
+					},
+					(status, res) => { //fail
+						console.log("피드 등록 중 오류 발생!");
+					}
+				);
+		}
+		$('#feed-edit-complete-btn').on("click", ajaxEditFeed);
+		
+		//내 피드만 보기
+		$("#myfeed-only-checkbox").on("change", function() {
+			if(this.checked){
+				alert('checked');
+			}
+		})
+	</script>
 </body>
 </html>
