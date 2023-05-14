@@ -22,7 +22,12 @@
 </style>
 </head>
 <body>
-
+	<%
+	if (session.getAttribute("hashcode") != null) {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+	%>
 	<%@ include file="header.jsp"%>
 
 	<div class="content">

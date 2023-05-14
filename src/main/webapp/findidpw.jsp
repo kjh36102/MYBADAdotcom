@@ -22,7 +22,12 @@
 </style>
 </head>
 <body>
-
+	<%
+	if (session.getAttribute("hashcode") != null) {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+	%>
 	<%@ include file="header.jsp"%>
 
 	<div class="content">
@@ -36,7 +41,9 @@
 
 			<form action="FindIdPwServlet" method="post" id="find-id-pw-form">
 				<div>
-					<h6><b>이메일 가입여부 확인</b></h6>
+					<h6>
+						<b>이메일 가입여부 확인</b>
+					</h6>
 				</div>
 				<div class="mb-5">
 					<input type="email" class="form-control pe-5" id="email"
@@ -48,7 +55,9 @@
 				</div>
 
 				<div>
-					<h6><b>비밀번호 초기화</b></h6>
+					<h6>
+						<b>비밀번호 초기화</b>
+					</h6>
 				</div>
 				<div class="mb-2">
 					<select class="form-select" aria-label="Default select example"

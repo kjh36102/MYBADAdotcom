@@ -27,7 +27,7 @@
 </head>
 <body>
 
-	<%@ include file="header.jsp"%>
+	<%@ include file="header.jsp"%> 
 
 	<div class="content">
 		<div id="login-box">
@@ -65,13 +65,6 @@
 					onclick="window.location.href='register.jsp'">아직 회원이 아니십니까?
 					Please join us!</div>
 			</div>
-
-			<div class="mt-5 mb-5">
-				<p>
-					<small>우리 웹사이트는 사용자 경험의 증진을 위해 쿠키를 사용합니다. 로그인 하는것은 쿠키 사용에
-						동의한 것과 같음을 알립니다.</small>
-				</p>
-			</div>
 		</div>
 	</div>
 
@@ -97,6 +90,9 @@
 				            alert("이메일 또는 비밀번호가 올바르지 않습니다. 다시 시도해보세요.");
 				        } else if (res === "valid") {
 				            window.location.href="feed.jsp";
+				        } else if (res === "already_login"){
+				        	alert("이미 로그인 된 상태입니다! 피드 페이지로 돌아갑니다.");
+				        	window.location.href="feed.jsp";
 				        }
 				    },
 				    (status, res) => { //fail

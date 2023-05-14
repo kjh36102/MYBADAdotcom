@@ -33,6 +33,12 @@ public class SignServlet extends HttpServlet {
 		String action = request.getParameter("action");
 
 		if (action.equals("signin")) {
+			if(request.getSession().getAttribute("hashcode") != null) {
+				response.getWriter().write("already_login");
+				return;
+			}
+			
+			
 			String email = request.getParameter("email");
 			String password = request.getParameter("password");
 
@@ -50,6 +56,8 @@ public class SignServlet extends HttpServlet {
 				if (db.rs.next()) {
 					HttpSession session = request.getSession();
 					session.setAttribute("hashcode", db.rs.getString("hashcode"));
+					session.setAttribute("email", db.rs.getString("email"));
+					session.setAttribute("name", db.rs.getString("name"));
 					session.setMaxInactiveInterval(60 * 20);	//유휴 20분 세션종료
 					response.getWriter().write("valid");
 				} else {

@@ -1,3 +1,4 @@
+<%@page import="xyz.cofon.DB"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -55,35 +56,55 @@ body {
 </head>
 <body>
 
-<%
+	<%
 	//로그인 hashcode 쿠키검색
-	String hashcode = (String)session.getAttribute("hashcode");
-
-%>
+	String hashcode = (String) session.getAttribute("hashcode");
+	%>
 	<nav class="navbar navbar-expand navbar-light" id="header">
 		<a class="navbar-brand header-btn" href="feed.jsp" id="logo">MYBADA.COM</a>
+
+		<%
+		if (hashcode != null) {
+		%>
+
+		<div class="d-flex align-items-center" style="width: 18rem;">
+			<img src="./static/img/unknown_user.png" class="mr-3"
+				style="width: 3.5em; height: 3.5em; object-fit: cover; border-radius: 50%; border: 2px solid gray;"
+				alt="Profile Picture">
+			<div class="ms-2">
+				<h5 class="mb-0">
+					<strong><%=session.getAttribute("name")%></strong>
+				</h5>
+				<p class="mb-0"><%=session.getAttribute("email")%></p>
+			</div>
+		</div>
+
+		<%
+		}
+		%>
+
+
 		<div class="collapse navbar-collapse justify-content-end"
 			id="navbarNav">
 			<ul class="navbar-nav">
 
 				<%
-				if (hashcode == null){
+				if (hashcode == null) {
 				%>
-					<li class="nav-item me-2"><a class="nav-link header-btn"
+				<li class="nav-item me-2"><a class="nav-link header-btn"
 					href="register.jsp">회원가입</a></li>
-					<li class="nav-item me-2"><a class="nav-link header-btn"
+				<li class="nav-item me-2"><a class="nav-link header-btn"
 					href="login.jsp">로그인</a></li>
-					
+
 				<%
-				}
-				else{
+				} else {
 				%>
-				
-					<li class="nav-item me-2"><a class="nav-link header-btn"
+
+				<li class="nav-item me-2"><a class="nav-link header-btn"
 					href="mypage.jsp">마이페이지</a></li>
-					<li class="nav-item me-2"><a class="nav-link header-btn"
+				<li class="nav-item me-2"><a class="nav-link header-btn"
 					href="logout.jsp" id="logout-btn" onclick="logout()">로그아웃</a></li>
-				
+
 				<%
 				}
 				%>
