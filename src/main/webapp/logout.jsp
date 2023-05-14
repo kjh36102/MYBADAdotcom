@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>MYBADA.COM::로그아웃</title>
 <style type="text/css">
 #logout-box {
 	width: 20em;

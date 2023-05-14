@@ -2,7 +2,6 @@
 CREATE DATABASE IF NOT EXISTS mybada;
 USE mybada;
 
-
 CREATE TABLE IF NOT EXISTS questions(
     id INT AUTO_INCREMENT PRIMARY KEY,
     question varchar(255) NOT NULL
@@ -17,14 +16,6 @@ CREATE TABLE IF NOT EXISTS puser(
     answer VARCHAR(255) NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (question_id) REFERENCES questions(id)
-);
-
-CREATE TABLE IF NOT EXISTS friends (
-    user_id CHAR(6),
-    friend_id CHAR(6),
-    PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES puser (hashcode),
-    FOREIGN KEY (friend_id) REFERENCES puser (hashcode)
 );
 
 CREATE TABLE IF NOT EXISTS pfeed(

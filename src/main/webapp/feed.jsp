@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>MYBADA.COM::피드</title>
 <style type="text/css">
 #feed-list-header {
 	width: 45em;
@@ -68,6 +68,10 @@
 
 .feed-content-text {
 	color: rgb(51, 51, 51);
+}
+
+.modal-dialog {
+	width: 30em;
 }
 
 #myfeed-only-box input, #myfeed-only-box label {
@@ -158,9 +162,9 @@
 					<img src="./static/img/unknown_user.png" class="mr-3 profile-img">
 					<div class="ms-2">
 						<h5 class="mb-0">
-							<strong><%=db.rs.getString("puser.name")%></strong>
+							<strong class="feed-name"><%=db.rs.getString("puser.name")%></strong>
 						</h5>
-						<p class="mb-0 ms-2"><%=db.rs.getString("puser.email")%></p>
+						<p class="mb-0 ms-2 feed-email"><%=db.rs.getString("puser.email")%></p>
 					</div>
 				</div>
 			</div>
@@ -198,9 +202,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-bs-dismiss="modal" id="feed-add-cancel-btn">취소</button>
-					<button type="button" class="btn btn-primary"
+					<button type="button" class="btn btn-primary w-100"
 						id="feed-add-complete-btn">완료</button>
 				</div>
 			</div>
@@ -226,9 +228,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-bs-dismiss="modal" id="feed-edit-cancel-btn">취소</button>
-					<button type="button" class="btn btn-primary"
+					<button type="button" class="btn btn-primary w-100"
 						id="feed-edit-complete-btn">완료</button>
 				</div>
 			</div>
@@ -236,19 +236,16 @@
 	</div>
 
 	<script type="text/javascript">
-		var feedAddContent = $('#feed-add-content');
-		var feedAddCompleteBtn = $('#feed-add-complete-btn');
-		var feedAddCancelBtn = $('#feed-add-cancel-btn');
-		var feedAddCloseBtn = $('#feed-add-btn-close'); 
-		
-		//피드추가 폼 초기화하는 함수
-		function clearFeedAddContent(){
-			feedAddContent[0].value = '';
-		}
-		feedAddCancelBtn.add(feedAddCloseBtn).on("click", clearFeedAddContent);
 		
 		//피드추가 ajax
 		function ajaxAddFeed(){
+			var feedAddContent = $('#feed-add-content');
+			
+			if(feedAddContent.val() === ""){
+				alert("내용을 입력해주세요.");
+				return;
+			}
+			
 			var formData = new FormData();
 			formData.append("action", "feedAdd");
 			formData.append("content", feedAddContent.val().replace(/\n/g, "<br>"));
@@ -271,7 +268,7 @@
 					}
 				);
 		}
-		feedAddCompleteBtn.on("click", ajaxAddFeed);
+		$('#feed-add-complete-btn').on("click", ajaxAddFeed);
 		
 		//피드삭제 ajax
 		function ajaxDeleteFeed(feedId){
@@ -310,10 +307,17 @@
 		
 		//피드수정 ajax
 		function ajaxEditFeed(){
+			var feedEditContent = $('#feed-edit-content');
+			
+			if(feedEditContent.val() === ""){
+				alert("내용을 입력해주세요.");
+				return;
+			}
+			
 			var formData = new FormData();
 			formData.append("action", "feedEdit");
 			formData.append("feedId", editFeedId);
-			formData.append("content", $('#feed-edit-content').val().replace(/\n/g, "<br>"));
+			formData.append("content", feedEditContent.val().replace(/\n/g, "<br>"));
 			
 			ajaxPost(formData, "FeedServlet", 
 					(status, res) => {	//success
@@ -336,10 +340,16 @@
 		
 		//내 피드만 보기
 		$("#myfeed-only-checkbox").on("change", function() {
-			if(this.checked){
-				alert('checked');
-			}
-		})
+			var headerEmail = $('.header-email').text();
+			var isMyFeedOnly = this.checked;
+		
+			$('.feed-card').each(function() {
+				var feedEmail = $(this).find('.feed-email').text();
+				var shouldHide = (isMyFeedOnly && feedEmail !== headerEmail);
+				$(this).toggle(!shouldHide);
+			});
+		});
+
 	</script>
 </body>
 </html>

@@ -73,9 +73,9 @@ body {
 				alt="Profile Picture">
 			<div class="ms-2">
 				<h5 class="mb-0">
-					<strong><%=session.getAttribute("name")%></strong>
+					<strong class="header-name"><%=session.getAttribute("name")%></strong>
 				</h5>
-				<p class="mb-0"><%=session.getAttribute("email")%></p>
+				<p class="mb-0 header-email"><%=session.getAttribute("email")%></p>
 			</div>
 		</div>
 
