@@ -64,6 +64,30 @@ INSERT INTO puser(hashcode, email, password, name, question_id, answer)
 values(RAND_HASH(), "bug@abc.com", "4444", "Bug", 4, "버그");
 INSERT INTO puser(hashcode, email, password, name, question_id, answer)
 values(RAND_HASH(), "cs@abc.com", "5555", "ComputerScience", 4, "컴퓨터과학");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "junga_lee@chosun.ac.kr", "1111", "이정아", 1, "이정아");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "ilyong_jung@chosun.ac.kr", "2222", "정일용", 2, "정일용");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "pangoo_kim@chosun.ac.kr", "3333", "김판구", 3, "김판구");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "sangman_mo@chosun.ac.kr", "4444", "모상만", 4, "모상만");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "seokjoo_shin@chosun.ac.kr", "5555", "신석주", 5, "신석주");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "hyunsook_jung@chosun.ac.kr", "6666", "정현숙", 6, "정현숙");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "moonsoo_kang@chosun.ac.kr", "7777", "강문수", 7, "강문수");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "heedeok_yang@chosun.ac.kr", "8888", "양희덕", 8, "양희덕");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "jaehong_sim@chosun.ac.kr", "9999", "심재홍", 9, "심재홍");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "hoyeop_jung@chosun.ac.kr", "1111", "정호엽", 10, "정호엽");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "wooyeol_choi@chosun.ac.kr", "2222", "최우열", 1, "최우열");
+INSERT INTO puser(hashcode, email, password, name, question_id, answer)
+values(RAND_HASH(), "chanjun_jeon@chosun.ac.kr", "3333", "전찬준", 2, "전찬준");
 
 INSERT INTO pfeed (hashcode, content)
 SELECT hashcode, 

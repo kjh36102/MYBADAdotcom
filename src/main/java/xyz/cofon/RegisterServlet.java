@@ -20,15 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public RegisterServlet() {
-		super();
-	}
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
 	private boolean checkEmailDup(String email) throws IOException, SQLException {
 
 		DB db = new DB();
@@ -70,7 +61,7 @@ public class RegisterServlet extends HttpServlet {
 			statement.setString(1, email);
 			statement.setString(2, pw);
 			statement.setString(3, name);
-			statement.setString(4, question);
+			statement.setInt(4, Integer.parseInt(question));
 			statement.setString(5, answer);
 			int rowsInserted = statement.executeUpdate();
 
@@ -91,7 +82,7 @@ public class RegisterServlet extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		
+
 		response.setCharacterEncoding("UTF-8");
 
 		String action = request.getParameter("action");
@@ -105,12 +96,12 @@ public class RegisterServlet extends HttpServlet {
 					response.getWriter().write("nodup");
 				}
 			} catch (IOException | SQLException e) {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "회원가입 중 오류발생!");
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "이메일 중복확인 중 오류발생!");
 				e.printStackTrace();
 			}
 
 		} else if (action.equals("register")) {
 			register(request, response);
-		}
+		} 
 	}
 }

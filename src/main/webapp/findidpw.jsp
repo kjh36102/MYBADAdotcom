@@ -46,11 +46,12 @@
 					</h6>
 				</div>
 				<div class="mb-5">
-					<input type="email" class="form-control pe-5" id="email"
-						name="email" placeholder="Email" maxlength="50" autocomplete="off">
+					<input type="email" class="form-control pe-5" v-model="email"
+						:style="{ backgroundColor: emailColor }" name="email"
+						placeholder="Email" maxlength="50" autocomplete="off">
 					<div class="d-grid gap-2 mt-2">
-						<button type="button" class="btn btn-light" id="check-exist-btn">가입
-							확인</button>
+						<button type="button" class="btn btn-light" id="check-exist-btn"
+							@click="checkEmailExist">가입 확인</button>
 					</div>
 				</div>
 
@@ -61,7 +62,7 @@
 				</div>
 				<div class="mb-2">
 					<select class="form-select" aria-label="Default select example"
-						id="question" name="question">
+						id="question" v-model="question">
 						<%
 						DB db = new DB();
 
@@ -82,11 +83,11 @@
 				</div>
 
 				<div class="mb-3">
-					<input type="text" class="form-control" id="answer" name="answer"
-						placeholder="Your answer" maxlength="255">
+					<input type="text" class="form-control" v-model="answer"
+						name="answer" placeholder="Your answer" maxlength="255">
 				</div>
 				<div class="d-grid gap-2 mb-4">
-					<button type="button" class="btn btn-primary" id="reset-pw-btn">비밀번호
+					<button type="button" class="btn btn-primary" @click="resetPassword">비밀번호
 						초기화</button>
 				</div>
 
@@ -99,81 +100,166 @@
 
 
 	<script type="text/javascript">
-		var email = $('#email')
-		var checkExistBtn = $('#check-exist-btn');
-		var question = $('#question');
-		var answer = $('#answer');
-		var clearPwBtn = $('#reset-pw-btn');
-		
-		var emailCheck = false;
-		function checkEmailExist(){
-			if (email.val() == ''){
-				alert("이메일을 입력해주세요.");
-				return;
-			}
-			
-			var re = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
-			if (!re.test(String(email.val()))){
-				alert("이메일 형식이 올바르지 않습니다!");
-				return;
-			}
-			
-			var formData = new FormData($('#find-id-pw-form')[0]);
-			formData.append("action", "checkEmailExist");
-			
-			ajaxPost(formData, "FindIdPwServlet", 
-					(status, res) => {	//success
-						if (res === "not_exist") {
-							emailCheck = false;
-							email.css("background-color", colorRed);
-						} else if (res === "exist") {
-							emailCheck = true;
-							email.css("background-color", colorGreen);
-						}
-					},
-					(status, res) => { //fail
-						console.log("이메일 가입여부 확인 중 오류 발생!");
+	
+		var app = new Vue({
+		  el: '#find-id-pw-form',
+		  data: {
+		    email: '',
+		    question: '1',
+		    answer: '',
+		    emailCheck: false,
+		    emailColor: 'white'
+		  },
+		  methods: {
+		    checkEmailExist: function() {
+		      if (this.email == '') {
+		        alert("이메일을 입력해주세요.");
+		        return;
+		      }
+		      
+		      var re = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
+		      if (!re.test(String(this.email))){
+		        alert("이메일 형식이 올바르지 않습니다!");
+		        return;
+		      }
+		      
+		      var formData = new URLSearchParams();
+		      formData.append("action", "checkEmailExist");
+		      formData.append("email", this.email);
+		      
+		      axios.post('FindIdPwServlet', formData, {
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
 					}
-				);
-		}
-		checkExistBtn.on("click", checkEmailExist);
-		
-		function resetPassword(){
-			if(!emailCheck){
-				alert("먼저 이메일 가입여부를 확인해야합니다.");
-				return;
-			}
-			
-			if (answer.val() == ''){
-				alert("질문의 정답을 입력해주세요.");
-				return;
-			}
-			
-			var formData = new FormData($('#find-id-pw-form')[0]);
-			formData.append("action", "resetPassword");
-			
-			ajaxPost(formData, "FindIdPwServlet", 
-					(status, res) => {	//success
-						if (res === "fail") {
-							alert("이메일 또는 질문에 대한 답이 올바르지 않습니다. 다시 시도해주세요.");
-						} else if (res === "ok") {
-							alert("비밀번호가 '1234'로 초기화되었습니다.\n마이페이지에서 비밀번호를 바로 변경하시길 바랍니다.");
-							window.location.href = 'login.jsp';
-						}
-					},
-					(status, res) => { //fail
-						console.log("비밀번호 초기화 중 오류 발생!");
+				})
+		        .then(response => {
+		          if (response.data === "not_exist") {
+		            this.emailCheck = false;
+		            this.emailColor = colorRed;
+		          } else if (response.data === "exist") {
+		            this.emailCheck = true;
+		            this.emailColor = colorGreen;
+		          }
+		        })
+		        .catch(error => {
+		          console.log("이메일 가입여부 확인 중 오류 발생!");
+		        });
+		    },
+		    resetPassword: function() {
+		      if(!this.emailCheck){
+		        alert("먼저 이메일 가입여부를 확인해야합니다.");
+		        return;
+		      }
+		      
+		      if (this.answer == ''){
+		        alert("질문의 정답을 입력해주세요.");
+		        return;
+		      }
+		      
+		      var formData = new URLSearchParams();
+		      formData.append("action", "resetPassword");
+		      formData.append("email", this.email);
+		      formData.append("question", this.question);
+		      formData.append("answer", this.answer);
+		      
+		      axios.post('FindIdPwServlet', formData, {
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
 					}
-				);
-		}
-		clearPwBtn.on("click", resetPassword);
+				})
+		        .then(response => {
+		          if (response.data === "fail") {
+		            alert("이메일 또는 질문에 대한 답이 올바르지 않습니다. 다시 시도해주세요.");
+		          } else if (response.data === "ok") {
+		            alert("비밀번호가 '1234'로 초기화되었습니다.\n마이페이지에서 비밀번호를 바로 변경하시길 바랍니다.");
+		            window.location.href = 'login.jsp';
+		          }
+		        })
+		        .catch(error => {
+		          console.log("비밀번호 초기화 중 오류 발생!");
+		        });
+		    },
+		    whenEmailChange: function() {
+		      this.emailCheck = false;
+		      this.emailColor = 'white';
+		    }
+		  }
+		})
+// 		var email = $('#email')
+// 		var checkExistBtn = $('#check-exist-btn');
+// 		var question = $('#question');
+// 		var answer = $('#answer');
+// 		var clearPwBtn = $('#reset-pw-btn');
 		
-		//이메일 변경을 감지하고 조건을 취소하는 함수
-		function whenEmailChange() {
-			emailCheck = false;
-			email.css("background-color", "white");
-		}
-		email.on("keydown", whenEmailChange);
+// 		var emailCheck = false;
+// 		function checkEmailExist(){
+// 			if (email.val() == ''){
+// 				alert("이메일을 입력해주세요.");
+// 				return;
+// 			}
+			
+// 			var re = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
+// 			if (!re.test(String(email.val()))){
+// 				alert("이메일 형식이 올바르지 않습니다!");
+// 				return;
+// 			}
+			
+// 			var formData = new FormData($('#find-id-pw-form')[0]);
+// 			formData.append("action", "checkEmailExist");
+			
+// 			ajaxPost(formData, "FindIdPwServlet", 
+// 					(status, res) => {	//success
+// 						if (res === "not_exist") {
+// 							emailCheck = false;
+// 							email.css("background-color", colorRed);
+// 						} else if (res === "exist") {
+// 							emailCheck = true;
+// 							email.css("background-color", colorGreen);
+// 						}
+// 					},
+// 					(status, res) => { //fail
+// 						console.log("이메일 가입여부 확인 중 오류 발생!");
+// 					}
+// 				);
+// 		}
+// 		checkExistBtn.on("click", checkEmailExist);
+		
+// 		function resetPassword(){
+// 			if(!emailCheck){
+// 				alert("먼저 이메일 가입여부를 확인해야합니다.");
+// 				return;
+// 			}
+			
+// 			if (answer.val() == ''){
+// 				alert("질문의 정답을 입력해주세요.");
+// 				return;
+// 			}
+			
+// 			var formData = new FormData($('#find-id-pw-form')[0]);
+// 			formData.append("action", "resetPassword");
+			
+// 			ajaxPost(formData, "FindIdPwServlet", 
+// 					(status, res) => {	//success
+// 						if (res === "fail") {
+// 							alert("이메일 또는 질문에 대한 답이 올바르지 않습니다. 다시 시도해주세요.");
+// 						} else if (res === "ok") {
+// 							alert("비밀번호가 '1234'로 초기화되었습니다.\n마이페이지에서 비밀번호를 바로 변경하시길 바랍니다.");
+// 							window.location.href = 'login.jsp';
+// 						}
+// 					},
+// 					(status, res) => { //fail
+// 						console.log("비밀번호 초기화 중 오류 발생!");
+// 					}
+// 				);
+// 		}
+// 		clearPwBtn.on("click", resetPassword);
+		
+// 		//이메일 변경을 감지하고 조건을 취소하는 함수
+// 		function whenEmailChange() {
+// 			emailCheck = false;
+// 			email.css("background-color", "white");
+// 		}
+// 		email.on("keydown", whenEmailChange);
 		
 	</script>
 </body>

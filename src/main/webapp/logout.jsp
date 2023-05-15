@@ -19,7 +19,9 @@
 
 	<div class="content d-flex align-items-center justify-content-center">
 		<div id="logout-box" class="text-center">
-			<h2><strong>로그아웃 되었습니다</strong></h2>
+			<h2>
+				<strong>로그아웃 되었습니다</strong>
+			</h2>
 			<div class="d-grid gap-2 mt-5">
 				<a class="btn btn-primary" href="feed.jsp">피드 화면으로</a>
 			</div>
@@ -28,8 +30,8 @@
 
 	<%@ include file="footer.jsp"%>
 
-<script>
-	
-</script>
+	<script>
+		
+	</script>
 </body>
 </html>

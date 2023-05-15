@@ -8,6 +8,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+//DB 사용을 편하게 하기 위한 wrap 클래스
 public class DB {
 	public Connection conn = null;
 	public PreparedStatement stmt = null;

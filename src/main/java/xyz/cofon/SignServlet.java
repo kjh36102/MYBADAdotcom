@@ -16,15 +16,6 @@ import javax.servlet.http.HttpSession;
 public class SignServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public SignServlet() {
-		super();
-	}
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-
-	}
-
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -32,13 +23,12 @@ public class SignServlet extends HttpServlet {
 
 		String action = request.getParameter("action");
 
-		if (action.equals("signin")) {
-			if(request.getSession().getAttribute("hashcode") != null) {
+		if (action.equals("signin")) {	//로그인
+			if (request.getSession().getAttribute("hashcode") != null) {
 				response.getWriter().write("already_login");
 				return;
 			}
-			
-			
+
 			String email = request.getParameter("email");
 			String password = request.getParameter("password");
 
@@ -58,7 +48,7 @@ public class SignServlet extends HttpServlet {
 					session.setAttribute("hashcode", db.rs.getString("hashcode"));
 					session.setAttribute("email", db.rs.getString("email"));
 					session.setAttribute("name", db.rs.getString("name"));
-					session.setMaxInactiveInterval(60 * 20);	//유휴 20분 세션종료
+					session.setMaxInactiveInterval(60 * 20); // 유휴 20분 세션종료
 					response.getWriter().write("valid");
 				} else {
 					response.getWriter().write("invalid");
@@ -67,15 +57,19 @@ public class SignServlet extends HttpServlet {
 				db.close();
 
 			} catch (Exception e) {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "회원가입 중 오류발생!");
-				System.out.println("error");
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "로그인 중 오류발생!");
 				e.printStackTrace();
 			}
-		} else if (action.equals("signout")) {
-			HttpSession session = request.getSession();
-			session.removeAttribute("hashcode");
-		}
+		} else if (action.equals("signout")) {	//로그아웃
+			try {
+				HttpSession session = request.getSession();
+				session.removeAttribute("hashcode");
 
+				response.getWriter().write("ok");
+			} catch (Exception e) {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "로그아웃 중 오류발생!");
+			}
+		}
 	}
 
 }

@@ -83,8 +83,7 @@
 
 	<%@ include file="header.jsp"%>
 
-	<div class="content">
-
+	<div class="content" id="content">
 
 		<div class="container" id="feed-list-header">
 			<div class="row align-items-center g-0">
@@ -99,7 +98,8 @@
 					%>
 					<div class="form-check form-switch me-3" id="myfeed-only-box">
 						<input class="form-check-input" type="checkbox" role="switch"
-							id="myfeed-only-checkbox"> <label
+							id="myfeed-only-checkbox" v-model="showMyFeedSwitch"
+							@change="showMyFeedToggle"> <label
 							class="form-check-label" for="myfeed-only-checkbox">내 피드만</label>
 					</div>
 					<%
@@ -114,7 +114,8 @@
 
 					<div id="feed-add-btn"
 						class="d-flex align-items-center justify-content-center"
-						data-bs-toggle="modal" data-bs-target="#feed-add-modal">
+						@click="openAddFeedModal" data-bs-toggle="modal"
+						data-bs-target="#feed-modal">
 
 						<img src="./static/img/add.png" width=25 height=25>
 					</div>
@@ -147,10 +148,10 @@
 					if (((String) db.rs.getString("pfeed.hashcode")).equals(hashcode)) {
 					%>
 					<img src="./static/img/delete.png" class="me-1"
-						onclick="ajaxDeleteFeed(<%=feedId%>)"> <img
+						@click="deleteFeed(<%=feedId%>)"> <img
 						src="./static/img/edit.png" class="me-1"
-						onclick="loadEditModal(<%=feedId%>)" data-bs-toggle="modal"
-						data-bs-target="#feed-edit-modal">
+						@click="openEditFeedModal(<%=feedId%>)" data-bs-toggle="modal"
+						data-bs-target="#feed-modal">
 					<%
 					}
 					%>
@@ -177,179 +178,164 @@
 		<%
 		}
 		%>
-
+		<!-- Feed Modal -->
+		<div class="modal fade" id="feed-modal" tabindex="-1"
+			aria-labelledby="feed-modal-label" aria-hidden="true">
+			<div
+				class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5" id="feed-modal-label">{{
+							modalTitle }}</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							id="feed-btn-close" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="form-floating">
+							<textarea class="form-control" placeholder="Leave a comment here"
+								id="feed-content" v-model="modalContent"></textarea>
+							<label for="feed-content">Content</label>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary w-100"
+							id="feed-complete-btn" @click="modalSubmit">완료</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<%@ include file="footer.jsp"%>
 
-
-	<!-- Feed add Modal -->
-	<div class="modal fade" id="feed-add-modal" tabindex="-1"
-		aria-labelledby="feed-add-modal-label" aria-hidden="true">
-		<div
-			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="feed-add-modal-label">피드 추가</h1>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						id="feed-add-btn-close" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="form-floating">
-						<textarea class="form-control" placeholder="Leave a comment here"
-							id="feed-add-content"></textarea>
-						<label for="feed-add-content">Content</label>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary w-100"
-						id="feed-add-complete-btn">완료</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Feed Edit Modal -->
-	<div class="modal fade" id="feed-edit-modal" tabindex="-1"
-		aria-labelledby="feed-edit-modal-label" aria-hidden="true">
-		<div
-			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="feed-edit-modal-label">피드 수정</h1>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						id="feed-edit-btn-close" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="form-floating">
-						<textarea class="form-control" placeholder="Leave a comment here"
-							id="feed-edit-content"></textarea>
-						<label for="feed-edit-content">Content</label>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary w-100"
-						id="feed-edit-complete-btn">완료</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<script type="text/javascript">
 		
-		//피드추가 ajax
-		function ajaxAddFeed(){
-			var feedAddContent = $('#feed-add-content');
-			
-			if(feedAddContent.val() === ""){
-				alert("내용을 입력해주세요.");
-				return;
-			}
-			
-			var formData = new FormData();
-			formData.append("action", "feedAdd");
-			formData.append("content", feedAddContent.val().replace(/\n/g, "<br>"));
-			
-			ajaxPost(formData, "FeedServlet", 
-					(status, res) => {	//success
-						if (res === "ok") {
-							alert("등록이 완료되었습니다!");
+		new Vue({
+			el: '#content',
+			data: {
+				showMyFeedSwitch: false,
+				modalMode: '',
+				modalTitle: '',
+				modalContent: '',
+				editFeedId: '',
+			},
+			methods: {
+				openAddFeedModal: function(){	//피드 추가 모달 여는 함수
+					this.modalMode = 'add';
+					this.modalTitle = '피드 추가';
+					this.modalContent = '';
+				},
+				openEditFeedModal: function(feedId){	//피드 수정 모달 여는 함수
+					this.modalMode = 'edit';
+					this.modalTitle = '피드 수정';
+					this.modalContent = '';
+					
+					this.editFeedId = feedId;
+					
+					this.loadEditContent();
+				},
+				modalSubmit: function(){	//현재 모달 모드에 따라 콜백 호출하는 함수
+					if (this.modalMode === 'add')
+						this.addFeed();
+					else if (this.modalMode === 'edit')
+						this.editFeed();
+				},
+				addFeed: function(){	//피드 추가하는 함수
+					let formdata = new URLSearchParams();
+					formdata.append("content", this.modalContent.replace(/\n/g, "<br>"));
+					formdata.append("action", "feedAdd");
+					
+					axios.post("FeedServlet", formdata, {
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+						}
+					})
+					.then(res => {
+						if (res.data === "ok") {
+							alert("피드가 등록되었습니다!");
 							window.location.href="feed.jsp";
-						} else if (res === "fail") {
-							alert("등록이 실패했습니다!");
-						} else if (res === "no_permission"){
+						} else if (res.data === "fail") {
+							alert("피드등록이 실패했습니다!");
+						} else if (res.data === "no_permission"){
 							alert("피드 작성 권한이 없습니다.");
 							window.location.href="login.jsp";
 						}
-							
-					},
-					(status, res) => { //fail
-						console.log("피드 등록 중 오류 발생!");
-					}
-				);
-		}
-		$('#feed-add-complete-btn').on("click", ajaxAddFeed);
-		
-		//피드삭제 ajax
-		function ajaxDeleteFeed(feedId){
-			var formData = new FormData();
-			formData.append("action", "feedDelete");
-			formData.append("feedId", feedId);
-			
-			ajaxPost(formData, "FeedServlet", 
-					(status, res) => {	//success
-						if (res === "ok") {
+					})
+					.catch(error => {
+						alert("피드 등록 중 오류 발생!");
+						console.log(error);
+					})
+				},
+				deleteFeed: function(feedId){		//피드 제거하는 함수
+					let formdata = new URLSearchParams();
+					formdata.append("feedId", feedId);
+					formdata.append("action", "feedDelete");
+					
+					axios.post("FeedServlet", formdata, {
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+						}
+					})
+					.then(res => {
+						if (res.data === "ok") {
 							alert("피드가 삭제되었습니다!");
 							window.location.href="feed.jsp";
-						} else if (res === "fail") {
+						} else if (res.data === "fail") {
 							alert("피드 삭제가 실패했습니다!");
-						} else if (res === "no_permission"){
+						} else if (res.data === "no_permission"){
 							alert("피드 삭제 권한이 없습니다.");
 							window.location.href="login.jsp";
 						}
-					},
-					(status, res) => { //fail
-						console.log("피드 삭제 중 오류 발생!");
-					}
-				);
-		}
-		
-		var editFeedId = null;
-		//피드수정 데이터 로드
-		function loadEditModal(feedId){
-			editFeedId = feedId;
-			var feedContent = $('#feed-content-' + feedId).html();
-			feedContent = feedContent.replace(/<br>/g, "\n");
-			
-			var feedTextArea = $('#feed-edit-content')
-			feedTextArea.val(feedContent);
-		}
-		
-		//피드수정 ajax
-		function ajaxEditFeed(){
-			var feedEditContent = $('#feed-edit-content');
-			
-			if(feedEditContent.val() === ""){
-				alert("내용을 입력해주세요.");
-				return;
-			}
-			
-			var formData = new FormData();
-			formData.append("action", "feedEdit");
-			formData.append("feedId", editFeedId);
-			formData.append("content", feedEditContent.val().replace(/\n/g, "<br>"));
-			
-			ajaxPost(formData, "FeedServlet", 
-					(status, res) => {	//success
-						if (res === "ok") {
+					})
+					.catch(error => {
+						alert("피드 삭제 중 오류 발생!");
+						console.log(error);
+					})
+				},
+				editFeed: function(){		//피드 수정하는 함수
+					let formdata = new URLSearchParams();
+					formdata.append("content", this.modalContent.replace(/\n/g, "<br>"));
+					formdata.append("feedId", this.editFeedId);
+					formdata.append("action", "feedEdit");
+					
+					axios.post("FeedServlet", formdata, {
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+						}
+					})
+					.then(res => {
+						if (res.data === "ok") {
 							alert("수정이 완료되었습니다!");
 							window.location.href="feed.jsp";
-						} else if (res === "fail") {
+						} else if (res.data === "fail") {
 							alert("수정이 실패했습니다!");
-						} else if (res === "no_permission"){
+						} else if (res.data === "no_permission"){
 							alert("피드 수정 권한이 없습니다.");
 							window.location.href="login.jsp";
 						}
-					},
-					(status, res) => { //fail
-						console.log("피드 등록 중 오류 발생!");
-					}
-				);
-		}
-		$('#feed-edit-complete-btn').on("click", ajaxEditFeed);
-		
-		//내 피드만 보기
-		$("#myfeed-only-checkbox").on("change", function() {
-			var headerEmail = $('.header-email').text();
-			var isMyFeedOnly = this.checked;
-		
-			$('.feed-card').each(function() {
-				var feedEmail = $(this).find('.feed-email').text();
-				var shouldHide = (isMyFeedOnly && feedEmail !== headerEmail);
-				$(this).toggle(!shouldHide);
-			});
-		});
-
+					})
+					.catch(error => {
+						alert("피드 수정 중 오류 발생!");
+						console.log(error);
+					})
+				},
+				loadEditContent: function(){		//수정모드로 모달 창 열때 피드 내용 불러오는 함수
+					editFeedId = this.editFeedId;
+					var feedContent = $('#feed-content-' + editFeedId).html();
+					this.modalContent = feedContent.replace(/<br>/g, "\n");
+				},
+				showMyFeedToggle: function() {		//내 피드만 보이게 하는 것을 토글하는 함수
+				  var headerEmail = $('.header-email').text();
+				  
+				  $('.feed-card').each((index, element) => {
+				    var feedEmail = $(element).find('.feed-email').text();
+				    var shouldHide = !(this.showMyFeedSwitch && feedEmail !== headerEmail);
+				    $(element).toggle(shouldHide);
+				  });
+				}
+			}
+		})
+	
 	</script>
 </body>
 </html>
