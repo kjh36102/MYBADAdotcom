@@ -106,7 +106,7 @@ body {
 				<li class="nav-item me-2"><a class="nav-link header-btn"
 					href="mypage.jsp">마이페이지</a></li>
 				<li class="nav-item me-2"><p class="nav-link header-btn mb-0"
-						id="logout-btn" @click="logout">로그아웃</p></li>
+						id="logout-btn" @click="logout" style="cursor: pointer;">로그아웃</p></li>
 
 				<%
 				}
